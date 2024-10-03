@@ -1,0 +1,6 @@
+# Ignorar directorios específicos
+addons/
+config/
+
+# Ignorar archivos específicos
+odoo_pg_pass

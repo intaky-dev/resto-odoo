@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  odoo_glider:
+    build:
+      context: .
+      dockerfile: dockerfile
+    depends_on:
+      - db_glider
+    ports:
+      - "8069:8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+#     - ./config:/etc/odoo
+      - ./OCA:/mnt/OCA
+      - ./addons/:/mnt/extra-addons
+    environment:
+      - PASSWORD_FILE=/run/secrets/postgresql_password
+      - HOST=db_glider   # Points to the database service
+      - USER=odoo        # Database user
+      - DB_NAME=postgres # Database name
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - PORT=5432        # Database port
+    secrets:
+      - postgresql_password
+    networks:
+      - odoo_gliderit
+
+  db_glider:
+    image: postgres:13.14-bullseye
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgresql_password
+      - POSTGRES_USER=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    secrets:
+      - postgresql_password
+    networks:
+      - odoo_gliderit
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:
+
+secrets:
+  postgresql_password:
+    file: ./odoo_pg_pass
+
+networks:
+  odoo_gliderit:
+    driver: bridge
